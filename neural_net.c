@@ -1,17 +1,5 @@
 #include "neural_net.h"
 
-static void matrix_print(const gsl_matrix *m)
-{
-	int i, j;
-	for (i=0; i< m->size1; ++i) {
-		for (j=0; j < m->size2-1; ++j) {
-			printf("%f, ", gsl_matrix_get(m, i, j));
-		}
-		printf("%f\n", gsl_matrix_get(m, i, j));
-	}
-	printf("\n");
-}
-
 static void activ(gsl_matrix *m)
 {
 	int i;
@@ -193,4 +181,28 @@ void nn_predict(
 	fwd_prop(nn);
 	for (i=0; i< res->size2; ++i)
 		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
+}
+
+void matrix_print(const gsl_matrix *m)
+{
+	int i, j;
+	for (i=0; i< m->size1; ++i) {
+		for (j=0; j < m->size2-1; ++j) {
+			printf("%f, ", gsl_matrix_get(m, i, j));
+		}
+		printf("%f\n", gsl_matrix_get(m, i, j));
+	}
+	printf("\n");
+}
+
+gsl_matrix *arr_to_gslmat(
+	const double *arr,
+	const int rows,
+	const int cols)
+{
+	int i;
+	gsl_matrix *m = gsl_matrix_alloc(rows, cols);
+	for (i=0; i < rows * cols; ++i)
+		m->data[i] = arr[i];
+	return m;
 }

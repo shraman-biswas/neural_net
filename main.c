@@ -29,18 +29,6 @@ int main(void)
 	return EXIT_SUCCESS;
 }
 
-static gsl_matrix *arr_to_gslmat(
-	const double *arr,
-	const int rows,
-	const int cols)
-{
-	int i;
-	gsl_matrix *m = gsl_matrix_alloc(rows, cols);
-	for (i=0; i < rows * cols; ++i)
-		m->data[i] = arr[i];
-	return m;
-}
-
 static void disp_res(
 	const gsl_matrix *in,
 	const gsl_matrix *res,
