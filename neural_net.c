@@ -211,13 +211,13 @@ void nn_train(
 /* neural network prediction */
 void nn_predict(
 	neural_net_t *nn,
-	const gsl_matrix *in,
+	const gsl_matrix *teset,
 	const gsl_matrix *res)
 {
 	int i;
-	/* apply testing inputs */
-	for (i=0; i< in->size2; ++i)
-		gsl_matrix_set(nn->act[0], 0, i, in->data[i]);
+	/* apply testing set */
+	for (i=0; i< teset->size2; ++i)
+		gsl_matrix_set(nn->act[0], 0, i, teset->data[i]);
 	gsl_matrix_set(nn->act[0], 0, i, 1);
 	/* forward propogate stimuli */
 	fwd_prop(nn);
