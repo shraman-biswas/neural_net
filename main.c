@@ -47,26 +47,30 @@ int main(void)
 static void disp_result(
 	const gsl_matrix *train,
 	const gsl_matrix *result,
-	const int set)
+	const int set_num)
 {
 	int i;
 	double input1, input2;
-	i = train->size2 * set;
+	i = train->size2 * set_num;
 	input1 = train->data[i];		/* training input 1 */
 	input2 = train->data[i+1];		/* training input 2 */
 	printf("(%f, %f) -> ", input1, input2);
 	for (i=0; i < result->size2-1; ++i)
-		printf("%f, ", result->data[i]);
-	printf("%f\n", result->data[i]);
+		printf("%f, ", gsl_matrix_get(result, 0, i));
+	printf("%f\n", gsl_matrix_get(result, 0, i));
 }
 
 /* select neural network testing inputs matrix */
 static void select_test(
 	const gsl_matrix *train,
-	const gsl_matrix *test,
-	const int set)
+	gsl_matrix *test,
+	const int set_num)
 {
 	int i;
+	//gsl_matrix_view tmp;
+	//tmp = gsl_matrix_submatrix((gsl_matrix *)train, set_num, 0, set_num, train->size2);
+	//printf("---> %ld, %ld", tmp.matrix.size1, tmp.matrix.size2);
+	//gsl_matrix_memcpy(test, &tmp.matrix);
 	for (i=0; i < train->size2; ++i)
-		test->data[i] = train->data[set * train->size2 + i];
+		test->data[i] = train->data[set_num * train->size2 + i];
 }

@@ -30,7 +30,7 @@ static void disp_result(
 	const int set);
 static void select_test(
 	const gsl_matrix *train,
-	const gsl_matrix *test,
+	gsl_matrix *test,
 	const int set);
 
 #endif
