@@ -222,8 +222,10 @@ void nn_predict(
 	gsl_matrix_set(nn->act[0], 0, i, 1);
 	/* forward propogate stimuli */
 	fwd_prop(nn);
-	/* copy result into prediction results matrix */
-	gsl_matrix_memcpy(result, nn->act[nn->num-1]);
+	/* prediction results matrix */
+	for (i=0; i < result->size2; ++i)
+		result->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
+	//gsl_matrix_memcpy(result, nn->act[nn->num-1]);
 }
 
 /*----------------------------------------------------------------------------*/
