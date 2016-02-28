@@ -26,13 +26,13 @@ neural_net_t *nn_create(
 void nn_destroy(neural_net_t *nn);
 void nn_train(
 	neural_net_t *nn,
-	const gsl_matrix *in,
-	const gsl_matrix *tgt,
+	const gsl_matrix *train,
+	const gsl_matrix *target,
 	const int epochs);
 void nn_predict(
 	neural_net_t *nn,
-	const gsl_matrix *teset,
-	const gsl_matrix *res);
+	const gsl_matrix *test,
+	const gsl_matrix *result);
 void disp_matrix(const gsl_matrix *m);
 gsl_matrix *arr_to_gslmat(
 	const double *arr,

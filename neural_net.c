@@ -181,26 +181,26 @@ void nn_destroy(neural_net_t *nn)
 	free(nn);
 }
 
-/* train neural network  */
+/* train neural network */
 void nn_train(
 	neural_net_t *nn,
-	const gsl_matrix *in,
-	const gsl_matrix *tgt,
+	const gsl_matrix *train,
+	const gsl_matrix *target,
 	const int epochs)
 {
 	int i, r;
 	gsl_matrix_view tmp;
 	/* create training set matrix from training inputs matrix */
-	gsl_matrix *trset = create_trset(in);
+	gsl_matrix *trset = create_trset(train);
 	for (i=0; i<epochs; ++i) {
 		/* randomly select training inputs */
-		r = gsl_rng_uniform_int(nn->rng, in->size1);
-		tmp = gsl_matrix_submatrix(trset, r, 0, 1, in->size2 + 1);
+		r = gsl_rng_uniform_int(nn->rng, train->size1);
+		tmp = gsl_matrix_submatrix(trset, r, 0, 1, train->size2 + 1);
 		gsl_matrix_memcpy(nn->act[0], &tmp.matrix);
 		/* forward propogate stimuli */
 		fwd_prop(nn);
-		/* backward propogate deltas */
-		bwd_prop(nn, &tgt->data[r * tgt->size2]);
+		/* backward propogate */
+		bwd_prop(nn, &target->data[r * target->size2]);
 		/* update weights */
 		wts_update(nn);
 	}
@@ -211,20 +211,20 @@ void nn_train(
 /* neural network prediction */
 void nn_predict(
 	neural_net_t *nn,
-	const gsl_matrix *teset,
-	const gsl_matrix *res)
+	const gsl_matrix *test,
+	const gsl_matrix *result)
 {
 	int i;
 	//gsl_matrix_view tmp;
-	/* apply testing set */
-	for (i=0; i < teset->size2; ++i)
-		gsl_matrix_set(nn->act[0], 0, i, teset->data[i]);
+	/* apply testing inputs */
+	for (i=0; i < test->size2; ++i)
+		gsl_matrix_set(nn->act[0], 0, i, test->data[i]);
 	gsl_matrix_set(nn->act[0], 0, i, 1);
 	/* forward propogate stimuli */
 	fwd_prop(nn);
-	/* construct results matrix */
-	for (i=0; i< res->size2; ++i)
-		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
+	/* fill prediction results matrix */
+	for (i=0; i < result->size2; ++i)
+		result->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
 	//tmp = gsl_matrix_submatrix(nn->act[nn->num-1], 0, 0, 0, res->size2);
 	//gsl_matrix_memcpy(res, &tmp.matrix);
 }

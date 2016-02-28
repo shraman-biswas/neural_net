@@ -60,7 +60,7 @@ static void disp_result(
 	printf("%f\n", result->data[i]);
 }
 
-/* select neural network input matrix */
+/* select neural network testing inputs matrix */
 static void select_test(
 	const gsl_matrix *train,
 	const gsl_matrix *test,
