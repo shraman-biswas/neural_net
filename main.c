@@ -4,17 +4,16 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num;
-	num = sizeof(layers) / sizeof(*layers);
+	int i, num_layers = sizeof(layers) / sizeof(*layers);
 
-	nn_init(layers, num, 0.1, 2);
+	nn_init(layers, num_layers, 0.1, 2);
 
 	nn_train(&in, &tgt, EPOCHS);
 
 	double x_arr[in.cols];
-	double res_arr[layers[num-1]];
+	double res_arr[layers[num_layers - 1]];
 	nn_matrix_t x = {1, in.cols, x_arr};
-	nn_matrix_t res = {1, layers[num-1], res_arr};
+	nn_matrix_t res = {1, layers[num_layers - 1], res_arr};
 
 	for (i=0; i<4; ++i) {
 		set_x(&x, i);
