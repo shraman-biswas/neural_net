@@ -52,11 +52,10 @@ static void matrix_set_rand(gsl_matrix *m)
 
 static void matrix_append(gsl_matrix *m, const nn_matrix_t *in)
 {
-	int cols = in->cols;
 	int i, j, tmp;
-	for (i=0; i< in->rows; ++i) {
-		for (j=0; j<cols+1; ++j) {
-			tmp = (j < cols) ? in->data[i * cols + j] : 1;
+	for (i=0; i < in->rows; ++i) {
+		for (j=0; j < in->cols+1; ++j) {
+			tmp = (j < in->cols) ? in->data[i * in->cols + j] : 1;
 			gsl_matrix_set(m, i, j, tmp);
 		}
 	}
@@ -149,13 +148,13 @@ void nn_clear(void)
 
 void nn_train(const nn_matrix_t *in, const nn_matrix_t *tgt, const int epochs)
 {
-	int i, r, rows = in->rows, cols = in->cols;
-	gsl_matrix *trng_set = gsl_matrix_alloc(rows, cols + 1);
+	int i, r;
+	gsl_matrix *trng_set = gsl_matrix_alloc(in->rows, in->cols + 1);
 	matrix_append(trng_set, in);
 	gsl_matrix_view tmp;
 	for (i=0; i<epochs; ++i) {
-		r = gsl_rng_uniform_int(nn.rng, rows);
-		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, cols + 1);
+		r = gsl_rng_uniform_int(nn.rng, in->rows);
+		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->cols + 1);
 		gsl_matrix_memcpy(nn.act[0], &tmp.matrix);
 		fwd_prop();
 		bwd_prop(&tgt->data[r * tgt->cols]);
