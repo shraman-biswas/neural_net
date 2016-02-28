@@ -4,29 +4,48 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num = SIZE(layers);
+	int i, num, epochs;
+	double step, range;
+	neural_net_t *nn=NULL;
 
+	/* neural network parameters */
+	num = SIZE(layers);					/* number of layers */
+	step = 0.1;							/* weights scale step */
+	range = 2;							/* random number range */
+	epochs = 10000;						/* number of training iterations */
+
+	/* convert training inputs array to gsl matrix */
 	gsl_matrix *in = arr_to_gslmat(in_arr, 4, 2);
+
+	/* convert training targets array to gsl matrix */
 	gsl_matrix *tgt = arr_to_gslmat(tgt_arr, 4, 1);
 
+	/* allocate memory for neural network input matrix */
 	gsl_matrix *x = gsl_matrix_alloc(1, in->size2);
+
+	/* allocate memory for neural network prediction result */
 	gsl_matrix *res = gsl_matrix_alloc(1, layers[num-1]);
 
-	neural_net_t *nn = nn_create(layers, num, 0.1, 2);
+	/* create neural network */
+	nn = nn_create(layers, num, step, range);
 
-	nn_train(nn, in, tgt, EPOCHS);
+	/* train neural network */
+	nn_train(nn, in, tgt, epochs);
 
-	for (i=0; i < tgt->size1; ++i) {
-		set_x(in, x, i);
-		nn_predict(nn, x, res);
-		disp_res(in, res, i);
+	/* loop over training inputs  */
+	for (i=0; i < in->size1; ++i) {
+		set_x(in, x, i);				/* set neural network input  */
+		nn_predict(nn, x, res);			/* neural network prediction */
+		disp_res(in, res, i);			/* display prediction result */
 	}
 
+	/* destroy neural network */
 	nn_destroy(nn);
 
 	return EXIT_SUCCESS;
 }
 
+/* display neural nertwork prediction result matrix */
 static void disp_res(
 	const gsl_matrix *in,
 	const gsl_matrix *res,
@@ -35,14 +54,15 @@ static void disp_res(
 	int i;
 	double in1, in2;
 	i = in->size2 * set;
-	in1 = in->data[i];
-	in2 = in->data[i+1];
+	in1 = in->data[i];					/* training input 1 */
+	in2 = in->data[i+1];				/* training input 2 */
 	printf("(%f, %f) -> ", in1, in2);
 	for (i=0; i < res->size2-1; ++i)
 		printf("%f, ", res->data[i]);
 	printf("%f\n", res->data[i]);
 }
 
+/* set neural network input matrix */
 static void set_x(
 	const gsl_matrix *in,
 	const gsl_matrix *x,
