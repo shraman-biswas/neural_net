@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <gsl/gsl_matrix.h>
+
 #include "neural_net.h"
 
 #define EPOCHS 10000
@@ -23,10 +25,17 @@ const double tgt_arr[] = {
 	0
 };
 
-nn_matrix_t in = {4, 2, (double *)in_arr};
-nn_matrix_t tgt = {4, 1, (double *)tgt_arr};
-
-static void disp_res(const nn_matrix_t *res, const int set);
-static void set_x(const nn_matrix_t *x, const int set);
+static gsl_matrix *arr_to_gslmat(
+	const double *arr,
+	const int rows,
+	const int cols);
+static void disp_res(
+	const gsl_matrix *in,
+	const gsl_matrix *res,
+	const int set);
+static void set_x(
+	const gsl_matrix *in,
+	const gsl_matrix *x,
+	const int set);
 
 #endif
