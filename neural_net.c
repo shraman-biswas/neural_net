@@ -1,8 +1,8 @@
 #include "neural_net.h"
 
-/*---------------------------------------------------------------------------*/
-/* internal neural network functions                                         */
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* internal neural network functions                                          */
+/*----------------------------------------------------------------------------*/
 
 /* neural network activation function */
 static void activ(gsl_matrix *m)
@@ -111,13 +111,13 @@ static neural_net_t *init_mem(const int num)
 	nn->wts = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
 	nn->dwt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
 	nn->dlt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
-	nn->act = (gsl_matrix **)calloc(num, sizeof(gsl_matrix *));	
+	nn->act = (gsl_matrix **)calloc(num, sizeof(gsl_matrix *));
 	return nn;
 }
 
-/*---------------------------------------------------------------------------*/
-/* external neural network functions                                         */
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* external neural network functions                                          */
+/*----------------------------------------------------------------------------*/
 
 /* create and return neural network */
 neural_net_t *nn_create(
@@ -204,9 +204,9 @@ void nn_predict(
 		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
 }
 
-/*---------------------------------------------------------------------------*/
-/* external helper functions                                                 */
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+/* external helper functions                                                  */
+/*----------------------------------------------------------------------------*/
 
 /* display gsl matrix */
 void disp_matrix(const gsl_matrix *m)
