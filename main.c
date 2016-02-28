@@ -6,6 +6,7 @@ int main(void)
 
 	int i, num, epochs;
 	double step, range;
+	gsl_matrix *in=NULL, *tgt=NULL, *x=NULL, *res=NULL;
 	neural_net_t *nn=NULL;
 
 	/* neural network parameters */
@@ -15,16 +16,13 @@ int main(void)
 	epochs = 10000;				/* training iterations */
 
 	/* convert training inputs array to gsl matrix */
-	gsl_matrix *in = arr_to_gslmat(in_arr, 4, 2);
-
+	in = arr_to_gslmat(in_arr, 4, 2);
 	/* convert training targets array to gsl matrix */
-	gsl_matrix *tgt = arr_to_gslmat(tgt_arr, 4, 1);
-
+	tgt = arr_to_gslmat(tgt_arr, 4, 1);
 	/* allocate memory for neural network input matrix */
-	gsl_matrix *x = gsl_matrix_alloc(1, in->size2);
-
+	x = gsl_matrix_alloc(1, in->size2);
 	/* allocate memory for neural network prediction result */
-	gsl_matrix *res = gsl_matrix_alloc(1, layers[num-1]);
+	res = gsl_matrix_alloc(1, layers[num-1]);
 
 	/* create neural network */
 	nn = nn_create(layers, num, step, range);
