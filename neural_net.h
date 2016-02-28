@@ -9,11 +9,7 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 
-typedef struct __nn_matrix_t {
-	int rows, cols;
-	double *data;
-} nn_matrix_t;
-
+/* neural network structure */
 typedef struct __neural_net_t {
 	int num;
 	const int *layers;
@@ -37,7 +33,7 @@ void nn_predict(
 	neural_net_t *nn,
 	const gsl_matrix *in,
 	const gsl_matrix *res);
-void matrix_print(const gsl_matrix *m);
+void disp_matrix(const gsl_matrix *m);
 gsl_matrix *arr_to_gslmat(
 	const double *arr,
 	const int rows,

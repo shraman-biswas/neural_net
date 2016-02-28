@@ -1,5 +1,10 @@
 #include "neural_net.h"
 
+/*---------------------------------------------------------------------------*/
+/* internal neural network functions                                         */
+/*---------------------------------------------------------------------------*/
+
+/* neural network activation function */
 static void activ(gsl_matrix *m)
 {
 	int i;
@@ -10,6 +15,7 @@ static void activ(gsl_matrix *m)
 	}
 }
 
+/* derivative of neural network activation function */
 static void activ_der(gsl_matrix *m)
 {
 	int i;
@@ -20,12 +26,14 @@ static void activ_der(gsl_matrix *m)
 	}
 }
 
+/* initialize neural network random number generator */
 static void init_rand(neural_net_t *nn)
 {
 	gsl_rng_env_setup();
 	nn->rng = gsl_rng_alloc(gsl_rng_default);
 }
 
+/* set random values to neural network weights matrix */
 static void wts_rand(neural_net_t *nn, const int idx)
 {
 	int i, j;
@@ -39,17 +47,19 @@ static void wts_rand(neural_net_t *nn, const int idx)
 	}
 }
 
-static void matrix_append(gsl_matrix *m, const gsl_matrix *in)
+/* append matrix m1 to matrix m2 */
+static void append_matrix(gsl_matrix *m1, const gsl_matrix *m2)
 {
 	int i, j, tmp;
-	for (i=0; i < in->size1; ++i) {
-		for (j=0; j < in->size2+1; ++j) {
-			tmp = (j < in->size2) ? in->data[i * in->size2 + j] : 1;
-			gsl_matrix_set(m, i, j, tmp);
+	for (i=0; i < m2->size1; ++i) {
+		for (j=0; j < m2->size2+1; ++j) {
+			tmp = (j < m2->size2) ? m2->data[i * m2->size2 + j] : 1;
+			gsl_matrix_set(m1, i, j, tmp);
 		}
 	}
 }
 
+/* forward propogation */
 static void fwd_prop(neural_net_t *nn)
 {
 	int i;
@@ -60,6 +70,7 @@ static void fwd_prop(neural_net_t *nn)
 	}
 }
 
+/* backward propogation */
 static void bwd_prop(neural_net_t *nn, const double *target)
 {
 	int i, L = nn->num - 1;
@@ -77,6 +88,7 @@ static void bwd_prop(neural_net_t *nn, const double *target)
 	}
 }
 
+/* update neural network weights */
 static void wts_update(neural_net_t *nn)
 {
 	int i;
@@ -88,6 +100,7 @@ static void wts_update(neural_net_t *nn)
 	}
 }
 
+/* allocate and initialize neural network memory */
 static neural_net_t *init_mem(const int num)
 {
 	neural_net_t *nn = (neural_net_t *)malloc(sizeof(neural_net_t));
@@ -102,6 +115,11 @@ static neural_net_t *init_mem(const int num)
 	return nn;
 }
 
+/*---------------------------------------------------------------------------*/
+/* external neural network functions                                         */
+/*---------------------------------------------------------------------------*/
+
+/* create and return neural network */
 neural_net_t *nn_create(
 	const int *layers,
 	const int num,
@@ -130,6 +148,7 @@ neural_net_t *nn_create(
 	return nn;
 }
 
+/* destroy neural network */
 void nn_destroy(neural_net_t *nn)
 {
 	int i;
@@ -148,6 +167,7 @@ void nn_destroy(neural_net_t *nn)
 	free(nn);
 }
 
+/* train neural network  */
 void nn_train(
 	neural_net_t *nn,
 	const gsl_matrix *in,
@@ -157,7 +177,7 @@ void nn_train(
 	int i, r;
 	gsl_matrix_view tmp;
 	gsl_matrix *trng_set = gsl_matrix_alloc(in->size1, in->size2 + 1);
-	matrix_append(trng_set, in);
+	append_matrix(trng_set, in);
 	for (i=0; i<epochs; ++i) {
 		r = gsl_rng_uniform_int(nn->rng, in->size1);
 		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->size2 + 1);
@@ -169,6 +189,7 @@ void nn_train(
 	gsl_matrix_free(trng_set);
 }
 
+/* neural network prediction */
 void nn_predict(
 	neural_net_t *nn,
 	const gsl_matrix *in,
@@ -183,7 +204,12 @@ void nn_predict(
 		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
 }
 
-void matrix_print(const gsl_matrix *m)
+/*---------------------------------------------------------------------------*/
+/* external helper functions                                                 */
+/*---------------------------------------------------------------------------*/
+
+/* display gsl matrix */
+void disp_matrix(const gsl_matrix *m)
 {
 	int i, j;
 	for (i=0; i< m->size1; ++i) {
@@ -195,6 +221,7 @@ void matrix_print(const gsl_matrix *m)
 	printf("\n");
 }
 
+/* convert double array to gsl matrix */
 gsl_matrix *arr_to_gslmat(
 	const double *arr,
 	const int rows,
