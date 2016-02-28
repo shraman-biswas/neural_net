@@ -48,13 +48,13 @@ static void wts_rand(neural_net_t *nn, const int idx)
 }
 
 /* create training set matrix from training inputs matrix */
-static gsl_matrix *create_trset(const gsl_matrix *in)
+static gsl_matrix *create_trset(const gsl_matrix *train)
 {
 	int i, j, tmp;
-	gsl_matrix *trset = gsl_matrix_alloc(in->size1, in->size2 + 1);
-	for (i=0; i < in->size1; ++i) {
-		for (j=0; j < in->size2+1; ++j) {
-			tmp = (j < in->size2) ? in->data[i * in->size2 + j] : 1;
+	gsl_matrix *trset = gsl_matrix_alloc(train->size1, train->size2 + 1);
+	for (i=0; i < train->size1; ++i) {
+		for (j=0; j < train->size2+1; ++j) {
+			tmp = (j < train->size2) ? train->data[i * train->size2 + j] : 1;
 			gsl_matrix_set(trset, i, j, tmp);
 		}
 	}
