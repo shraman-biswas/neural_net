@@ -38,14 +38,15 @@ static void init_rand(neural_net_t *nn)
 	nn->rng = gsl_rng_alloc(gsl_rng_default);
 }
 
-static void matrix_set_rand(neural_net_t *nn, gsl_matrix *m)
+static void wts_rand(neural_net_t *nn, const int idx)
 {
 	int i, j;
 	double tmp;
-	for (i=0; i < m->size1; ++i) {
-		for (j=0; j < m->size2; ++j) {
+	gsl_matrix *wts = nn->wts[idx];
+	for (i=0; i < wts->size1; ++i) {
+		for (j=0; j < wts->size2; ++j) {
 			tmp = 2 * gsl_rng_uniform(nn->rng) - 1;
-			gsl_matrix_set(m, i, j, tmp * nn->range);
+			gsl_matrix_set(wts, i, j, tmp * nn->range);
 		}
 	}
 }
@@ -130,7 +131,7 @@ neural_net_t *nn_create(
 		rows = layers[i] + 1;
 		cols = (i < num-2) ? (layers[i+1] + 1) : layers[i+1];
 		nn->wts[i] = gsl_matrix_alloc(rows, cols);
-		matrix_set_rand(nn, nn->wts[i]);
+		wts_rand(nn, i);
 		nn->dwt[i] = gsl_matrix_alloc(rows, cols);
 		nn->dlt[i] = gsl_matrix_alloc(1, cols);
 	}
