@@ -21,7 +21,6 @@ typedef struct __neural_net_t {
 	gsl_rng *rng;
 	gsl_matrix **wts, **dwt, **dlt, **act;
 } neural_net_t;
-//neural_net_t nn;
 
 neural_net_t *nn_create(
 	const int *layers,
@@ -29,7 +28,11 @@ neural_net_t *nn_create(
 	const double step,
 	const double range);
 void nn_destroy(neural_net_t *nn);
-//void nn_train(const nn_matrix_t *in, const nn_matrix_t *tgt, const int epochs);
+void nn_train(
+	neural_net_t *nn,
+	const gsl_matrix *in,
+	const gsl_matrix *tgt,
+	const int epochs);
 //void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res);
 
 #endif

@@ -51,12 +51,12 @@ static void wts_rand(neural_net_t *nn, const int idx)
 	}
 }
 
-static void matrix_append(gsl_matrix *m, const nn_matrix_t *in)
+static void matrix_append(gsl_matrix *m, const gsl_matrix *in)
 {
 	int i, j, tmp;
-	for (i=0; i < in->rows; ++i) {
-		for (j=0; j < in->cols+1; ++j) {
-			tmp = (j < in->cols) ? in->data[i * in->cols + j] : 1;
+	for (i=0; i < in->size1; ++i) {
+		for (j=0; j < in->size2+1; ++j) {
+			tmp = (j < in->size2) ? in->data[i * in->size2 + j] : 1;
 			gsl_matrix_set(m, i, j, tmp);
 		}
 	}
@@ -160,24 +160,27 @@ void nn_destroy(neural_net_t *nn)
 	free(nn);
 }
 
-/*
-void nn_train(const nn_matrix_t *in, const nn_matrix_t *tgt, const int epochs)
+void nn_train(
+	neural_net_t *nn,
+	const gsl_matrix *in,
+	const gsl_matrix *tgt,
+	const int epochs)
 {
 	int i, r;
-	gsl_matrix *trng_set = gsl_matrix_alloc(in->rows, in->cols + 1);
-	matrix_append(trng_set, in);
 	gsl_matrix_view tmp;
+	gsl_matrix *trng_set = gsl_matrix_alloc(in->size1, in->size2 + 1);
+	matrix_append(trng_set, in);
 	for (i=0; i<epochs; ++i) {
-		r = gsl_rng_uniform_int(nn.rng, in->rows);
-		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->cols + 1);
-		gsl_matrix_memcpy(nn.act[0], &tmp.matrix);
-		fwd_prop();
-		bwd_prop(&tgt->data[r * tgt->cols]);
-		wts_update();
+		r = gsl_rng_uniform_int(nn->rng, in->size1);
+		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->size2 + 1);
+		gsl_matrix_memcpy(nn->act[0], &tmp.matrix);
+		fwd_prop(nn);
+		bwd_prop(nn, &tgt->data[r * tgt->size2]);
+		wts_update(nn);
 	}
 	gsl_matrix_free(trng_set);
 }
-
+/*
 void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res)
 {
 	int i;

@@ -16,7 +16,7 @@ int main(void)
 
 	neural_net_t *nn = nn_create(layers, num_layers, 0.1, 2);
 
-	//nn_train(&in, &tgt, EPOCHS);
+	nn_train(nn, in, tgt, EPOCHS);
 
 	for (i=0; i<num_targets; ++i) {
 		set_x(in, x, i);
