@@ -9,10 +9,10 @@ int main(void)
 	neural_net_t *nn=NULL;
 
 	/* neural network parameters */
-	num = SIZE(layers);					/* number of layers */
-	step = 0.1;							/* weights scale step */
-	range = 2;							/* random number range */
-	epochs = 10000;						/* number of training iterations */
+	num = SIZE(layers);			/* number of layers */
+	step = 0.1;				/* weights scale step */
+	range = 2;				/* random number range */
+	epochs = 10000;				/* training iterations */
 
 	/* convert training inputs array to gsl matrix */
 	gsl_matrix *in = arr_to_gslmat(in_arr, 4, 2);
@@ -34,9 +34,9 @@ int main(void)
 
 	/* loop over training inputs  */
 	for (i=0; i < in->size1; ++i) {
-		set_x(in, x, i);				/* set neural network input  */
-		nn_predict(nn, x, res);			/* neural network prediction */
-		disp_res(in, res, i);			/* display prediction result */
+		set_x(in, x, i);		/* set neural network input  */
+		nn_predict(nn, x, res);		/* neural network prediction */
+		disp_res(in, res, i);		/* display prediction result */
 	}
 
 	/* destroy neural network */
@@ -54,8 +54,8 @@ static void disp_res(
 	int i;
 	double in1, in2;
 	i = in->size2 * set;
-	in1 = in->data[i];					/* training input 1 */
-	in2 = in->data[i+1];				/* training input 2 */
+	in1 = in->data[i];			/* training input 1 */
+	in2 = in->data[i+1];			/* training input 2 */
 	printf("(%f, %f) -> ", in1, in2);
 	for (i=0; i < res->size2-1; ++i)
 		printf("%f, ", res->data[i]);
