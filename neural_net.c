@@ -47,16 +47,18 @@ static void wts_rand(neural_net_t *nn, const int idx)
 	}
 }
 
-/* append matrix dst with matrix src */
-static void append_matrix(gsl_matrix *dst, const gsl_matrix *src)
+/* create training set matrix from training inputs matrix */
+static gsl_matrix *create_tset(const gsl_matrix *in)
 {
 	int i, j, tmp;
-	for (i=0; i < src->size1; ++i) {
-		for (j=0; j < src->size2+1; ++j) {
-			tmp = (j < src->size2) ? src->data[i * src->size2 + j] : 1;
-			gsl_matrix_set(dst, i, j, tmp);
+	gsl_matrix *tset = gsl_matrix_alloc(in->size1, in->size2 + 1);
+	for (i=0; i < in->size1; ++i) {
+		for (j=0; j < in->size2+1; ++j) {
+			tmp = (j < in->size2) ? in->data[i * in->size2 + j] : 1;
+			gsl_matrix_set(tset, i, j, tmp);
 		}
 	}
+	return tset;
 }
 
 /* forward propogation */
@@ -188,14 +190,12 @@ void nn_train(
 {
 	int i, r;
 	gsl_matrix_view tmp;
-	/* allocate training set matrix */
-	gsl_matrix *trng_set = gsl_matrix_alloc(in->size1, in->size2 + 1);
-	/* append training set matrix with input matrix */
-	append_matrix(trng_set, in);
+	/* create training set matrix from training inputs matrix */
+	gsl_matrix *tset = create_tset(in);
 	for (i=0; i<epochs; ++i) {
 		/* randomly select training inputs */
 		r = gsl_rng_uniform_int(nn->rng, in->size1);
-		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->size2 + 1);
+		tmp = gsl_matrix_submatrix(tset, r, 0, 1, in->size2 + 1);
 		gsl_matrix_memcpy(nn->act[0], &tmp.matrix);
 		/* forward propogate stimuli */
 		fwd_prop(nn);
@@ -205,7 +205,7 @@ void nn_train(
 		wts_update(nn);
 	}
 	/* deallocate training set matrix */
-	gsl_matrix_free(trng_set);
+	gsl_matrix_free(tset);
 }
 
 /* neural network prediction */
