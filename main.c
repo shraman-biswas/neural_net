@@ -4,7 +4,9 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num_layers = sizeof(layers) / sizeof(*layers);
+	int i, num_layers, num_targets;
+	num_layers = SIZE(layers);
+	num_targets = SIZE(tgt_arr);
 
 	nn_init(layers, num_layers, 0.1, 2);
 
@@ -15,7 +17,7 @@ int main(void)
 	nn_matrix_t x = {1, in.cols, x_arr};
 	nn_matrix_t res = {1, layers[num_layers - 1], res_arr};
 
-	for (i=0; i<4; ++i) {
+	for (i=0; i<num_targets; ++i) {
 		set_x(&x, i);
 		nn_predict(&x, &res);
 		disp_res(&res, i);

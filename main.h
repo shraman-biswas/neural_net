@@ -7,6 +7,7 @@
 #include "neural_net.h"
 
 #define EPOCHS 10000
+#define SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 const int layers[] = {2, 2, 1};
 const double in_arr[] = {
