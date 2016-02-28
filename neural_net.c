@@ -213,21 +213,17 @@ void nn_train(
 void nn_predict(
 	neural_net_t *nn,
 	const gsl_matrix *test,
-	const gsl_matrix *result)
+	gsl_matrix *result)
 {
 	int i;
-	//gsl_matrix_view tmp;
 	/* apply testing inputs */
 	for (i=0; i < test->size2; ++i)
 		gsl_matrix_set(nn->act[0], 0, i, test->data[i]);
 	gsl_matrix_set(nn->act[0], 0, i, 1);
 	/* forward propogate stimuli */
 	fwd_prop(nn);
-	/* fill prediction results matrix */
-	for (i=0; i < result->size2; ++i)
-		result->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
-	//tmp = gsl_matrix_submatrix(nn->act[nn->num-1], 0, 0, 0, res->size2);
-	//gsl_matrix_memcpy(res, &tmp.matrix);
+	/* copy result into prediction results matrix */
+	gsl_matrix_memcpy(result, nn->act[nn->num-1]);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -247,7 +243,7 @@ void disp_matrix(const gsl_matrix *m)
 	printf("\n");
 }
 
-/* convert double array to gsl matrix */
+/* convert array to gsl matrix */
 gsl_matrix *arr_to_gslmat(
 	const double *arr,
 	const int rows,
