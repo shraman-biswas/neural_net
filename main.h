@@ -25,10 +25,6 @@ const double tgt_arr[] = {
 	0
 };
 
-static gsl_matrix *arr_to_gslmat(
-	const double *arr,
-	const int rows,
-	const int cols);
 static void disp_res(
 	const gsl_matrix *in,
 	const gsl_matrix *res,

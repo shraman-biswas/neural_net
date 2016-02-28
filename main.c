@@ -4,21 +4,19 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num_layers, num_targets;
-	num_layers = SIZE(layers);
-	num_targets = SIZE(tgt_arr);
+	int i, num = SIZE(layers);
 
 	gsl_matrix *in = arr_to_gslmat(in_arr, 4, 2);
 	gsl_matrix *tgt = arr_to_gslmat(tgt_arr, 4, 1);
 
 	gsl_matrix *x = gsl_matrix_alloc(1, in->size2);
-	gsl_matrix *res = gsl_matrix_alloc(1, layers[num_layers-1]);
+	gsl_matrix *res = gsl_matrix_alloc(1, layers[num-1]);
 
-	neural_net_t *nn = nn_create(layers, num_layers, 0.1, 2);
+	neural_net_t *nn = nn_create(layers, num, 0.1, 2);
 
 	nn_train(nn, in, tgt, EPOCHS);
 
-	for (i=0; i<num_targets; ++i) {
+	for (i=0; i < tgt->size1; ++i) {
 		set_x(in, x, i);
 		nn_predict(nn, x, res);
 		disp_res(in, res, i);
