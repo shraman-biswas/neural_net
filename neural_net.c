@@ -215,8 +215,9 @@ void nn_predict(
 	const gsl_matrix *res)
 {
 	int i;
+	//gsl_matrix_view tmp;
 	/* apply testing set */
-	for (i=0; i< teset->size2; ++i)
+	for (i=0; i < teset->size2; ++i)
 		gsl_matrix_set(nn->act[0], 0, i, teset->data[i]);
 	gsl_matrix_set(nn->act[0], 0, i, 1);
 	/* forward propogate stimuli */
@@ -224,6 +225,8 @@ void nn_predict(
 	/* construct results matrix */
 	for (i=0; i< res->size2; ++i)
 		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
+	//tmp = gsl_matrix_submatrix(nn->act[nn->num-1], 0, 0, 0, res->size2);
+	//gsl_matrix_memcpy(res, &tmp.matrix);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -234,7 +237,7 @@ void nn_predict(
 void disp_matrix(const gsl_matrix *m)
 {
 	int i, j;
-	for (i=0; i< m->size1; ++i) {
+	for (i=0; i < m->size1; ++i) {
 		for (j=0; j < m->size2-1; ++j) {
 			printf("%f, ", gsl_matrix_get(m, i, j));
 		}

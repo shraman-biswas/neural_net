@@ -11,26 +11,26 @@
 #define SIZE(x) (sizeof(x) / sizeof(*(x)))
 
 const int layers[] = {2, 2, 1};			/* neural network layers */
-const double in_arr[] = {			/* training inputs array */
+const double train_arr[] = {			/* training inputs array */
 	0,	0,
 	0, 	1,
 	1, 	0,
 	1,	1,
 };
-const double tgt_arr[] = {			/* training targets array */
+const double target_arr[] = {			/* training targets array */
 	0,
 	1,
 	1,
 	0,
 };
 
-static void disp_res(
-	const gsl_matrix *in,
-	const gsl_matrix *res,
+static void disp_result(
+	const gsl_matrix *train,
+	const gsl_matrix *result,
 	const int set);
-static void set_x(
-	const gsl_matrix *in,
-	const gsl_matrix *x,
+static void select_test(
+	const gsl_matrix *train,
+	const gsl_matrix *test,
 	const int set);
 
 #endif
