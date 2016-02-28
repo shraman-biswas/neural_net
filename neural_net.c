@@ -47,14 +47,14 @@ static void wts_rand(neural_net_t *nn, const int idx)
 	}
 }
 
-/* append matrix m1 to matrix m2 */
-static void append_matrix(gsl_matrix *m1, const gsl_matrix *m2)
+/* append matrix dst with matrix src */
+static void append_matrix(gsl_matrix *dst, const gsl_matrix *src)
 {
 	int i, j, tmp;
-	for (i=0; i < m2->size1; ++i) {
-		for (j=0; j < m2->size2+1; ++j) {
-			tmp = (j < m2->size2) ? m2->data[i * m2->size2 + j] : 1;
-			gsl_matrix_set(m1, i, j, tmp);
+	for (i=0; i < src->size1; ++i) {
+		for (j=0; j < src->size2+1; ++j) {
+			tmp = (j < src->size2) ? src->data[i * src->size2 + j] : 1;
+			gsl_matrix_set(dst, i, j, tmp);
 		}
 	}
 }
@@ -188,8 +188,9 @@ void nn_train(
 {
 	int i, r;
 	gsl_matrix_view tmp;
-	/* allocate and create training set matrix */
+	/* allocate training set matrix */
 	gsl_matrix *trng_set = gsl_matrix_alloc(in->size1, in->size2 + 1);
+	/* append training set matrix with input matrix */
 	append_matrix(trng_set, in);
 	for (i=0; i<epochs; ++i) {
 		/* randomly select training inputs */
