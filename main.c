@@ -14,7 +14,7 @@ int main(void)
 	gsl_matrix *x = gsl_matrix_alloc(1, in->size2);
 	gsl_matrix *res = gsl_matrix_alloc(1, layers[num_layers-1]);
 
-	//nn_init(layers, num_layers, 0.1, 2);
+	neural_net_t *nn = nn_create(layers, num_layers, 0.1, 2);
 
 	//nn_train(&in, &tgt, EPOCHS);
 
@@ -24,7 +24,7 @@ int main(void)
 		disp_res(in, res, i);
 	}
 
-	//nn_clear();
+	nn_destroy(nn);
 
 	return EXIT_SUCCESS;
 }
