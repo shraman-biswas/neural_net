@@ -1,11 +1,3 @@
-CC = clang
-CFLAGS = -g -Wall -O2 -c
-LDFLAGS = -lgsl -lgslcblas -lm -o
-
-CFILES = *.c
-OFILES = *.o
-OUTPUT = main
-
 CXX	=	gcc
 FLAGS	=	-Wall -O3 -ggdb
 LIBS	=	-lgsl -lgslcblas -lm
