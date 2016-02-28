@@ -21,6 +21,7 @@ int main(void)
 	tgt = arr_to_gslmat(tgt_arr, 4, 1);
 	/* allocate memory for neural network input matrix */
 	x = gsl_matrix_alloc(1, in->size2);
+
 	/* allocate memory for neural network prediction result */
 	res = gsl_matrix_alloc(1, layers[num-1]);
 
