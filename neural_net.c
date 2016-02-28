@@ -189,9 +189,10 @@ void nn_train(
 	const int epochs)
 {
 	int i, r;
+	gsl_matrix *trset=NULL;
 	gsl_matrix_view tmp;
 	/* create training set matrix from training inputs matrix */
-	gsl_matrix *trset = create_trset(train);
+	trset = create_trset(train);
 	for (i=0; i<epochs; ++i) {
 		/* randomly select training inputs */
 		r = gsl_rng_uniform_int(nn->rng, train->size1);
@@ -252,9 +253,10 @@ gsl_matrix *arr_to_gslmat(
 	const int rows,
 	const int cols)
 {
-	int i;
-	gsl_matrix *m = gsl_matrix_alloc(rows, cols);
-	for (i=0; i < rows * cols; ++i)
-		m->data[i] = arr[i];
+	gsl_matrix *m=NULL;
+	gsl_matrix_view tmp;
+	m = gsl_matrix_alloc(rows, cols);
+	tmp = gsl_matrix_view_array((double *)arr, rows, cols);
+	gsl_matrix_memcpy(m, &tmp.matrix);
 	return m;
 }
