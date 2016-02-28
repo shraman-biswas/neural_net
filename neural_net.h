@@ -33,6 +33,9 @@ void nn_train(
 	const gsl_matrix *in,
 	const gsl_matrix *tgt,
 	const int epochs);
-//void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res);
+void nn_predict(
+	neural_net_t *nn,
+	const gsl_matrix *in,
+	const gsl_matrix *res);
 
 #endif

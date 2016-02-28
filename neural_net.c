@@ -180,15 +180,17 @@ void nn_train(
 	}
 	gsl_matrix_free(trng_set);
 }
-/*
-void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res)
+
+void nn_predict(
+	neural_net_t *nn,
+	const gsl_matrix *in,
+	const gsl_matrix *res)
 {
 	int i;
-	for (i=0; i< in->cols; ++i)
-		gsl_matrix_set(nn.act[0], 0, i, in->data[i]);
-	gsl_matrix_set(nn.act[0], 0, i, 1);
-	fwd_prop();
-	for (i=0; i< res->cols; ++i)
-		res->data[i] = gsl_matrix_get(nn.act[nn.num-1], 0, i);
+	for (i=0; i< in->size2; ++i)
+		gsl_matrix_set(nn->act[0], 0, i, in->data[i]);
+	gsl_matrix_set(nn->act[0], 0, i, 1);
+	fwd_prop(nn);
+	for (i=0; i< res->size2; ++i)
+		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
 }
-*/

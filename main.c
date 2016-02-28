@@ -20,7 +20,7 @@ int main(void)
 
 	for (i=0; i<num_targets; ++i) {
 		set_x(in, x, i);
-		//nn_predict(&x, &res);
+		nn_predict(nn, x, res);
 		disp_res(in, res, i);
 	}
 
