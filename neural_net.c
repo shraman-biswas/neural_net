@@ -127,43 +127,55 @@ neural_net_t *nn_create(
 	const double range)
 {
 	int i, rows, cols;
+	/* allocate memory and initialize neural netowrk */
 	neural_net_t *nn = init_mem(num);
-	nn->layers = layers;
-	nn->num = num;
-	nn->step = step;
-	nn->range = range;
+	/* get parameters */
+	nn->layers = layers;			/* neural network layers */
+	nn->num = num;				/* number of layers */
+	nn->step = step;			/* weight scale step */
+	nn->range = range;			/* random number range */
+	/* initialize random number generator */
 	init_rand(nn);
 	for (i=0; i < num-1; ++i) {
 		rows = layers[i] + 1;
 		cols = (i < num-2) ? (layers[i+1] + 1) : layers[i+1];
+		/* create weights matrices and set random weight values */
 		nn->wts[i] = gsl_matrix_alloc(rows, cols);
 		wts_rand(nn, i);
+		/* create weight deltas matrices */
 		nn->dwt[i] = gsl_matrix_alloc(rows, cols);
+		/* create deltas matrices */
 		nn->dlt[i] = gsl_matrix_alloc(1, cols);
 	}
 	for (i=0; i<num; ++i) {
 		cols = (i < num-1) ? (layers[i] + 1) : layers[i];
+		/* create activation matrices */
 		nn->act[i] = gsl_matrix_alloc(1, cols);
 	}
 	return nn;
 }
 
-/* destroy neural network */
+/* destroy neural network and deallocate memory */
 void nn_destroy(neural_net_t *nn)
 {
 	int i;
+	/* deallocate all activation matrices */
 	for (i=0; i < nn->num; ++i)
 		gsl_matrix_free(nn->act[i]);
+	/* deallocate all deltas, weight deltas, and weights matrices */
 	for (i=0; i < nn->num-1; ++i) {
 		gsl_matrix_free(nn->dlt[i]);
 		gsl_matrix_free(nn->dwt[i]);
 		gsl_matrix_free(nn->wts[i]);
 	}
+	/* deallocate radnom number generator */
 	gsl_rng_free(nn->rng);
+	/* deallocate all neural network matrix pointers */
 	free(nn->act);
 	free(nn->dlt);
 	free(nn->dwt);
 	free(nn->wts);
+	/* deallocate neural network */
 	free(nn);
 }
 
@@ -176,16 +188,22 @@ void nn_train(
 {
 	int i, r;
 	gsl_matrix_view tmp;
+	/* allocate and create training set matrix */
 	gsl_matrix *trng_set = gsl_matrix_alloc(in->size1, in->size2 + 1);
 	append_matrix(trng_set, in);
 	for (i=0; i<epochs; ++i) {
+		/* randomly select training inputs */
 		r = gsl_rng_uniform_int(nn->rng, in->size1);
 		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->size2 + 1);
 		gsl_matrix_memcpy(nn->act[0], &tmp.matrix);
+		/* forward propogate stimuli */
 		fwd_prop(nn);
+		/* backward propogate deltas */
 		bwd_prop(nn, &tgt->data[r * tgt->size2]);
+		/* update weights */
 		wts_update(nn);
 	}
+	/* deallocate training set matrix */
 	gsl_matrix_free(trng_set);
 }
 
@@ -196,10 +214,13 @@ void nn_predict(
 	const gsl_matrix *res)
 {
 	int i;
+	/* apply testing inputs */
 	for (i=0; i< in->size2; ++i)
 		gsl_matrix_set(nn->act[0], 0, i, in->data[i]);
 	gsl_matrix_set(nn->act[0], 0, i, 1);
+	/* forward propogate stimuli */
 	fwd_prop(nn);
+	/* construct results matrix */
 	for (i=0; i< res->size2; ++i)
 		res->data[i] = gsl_matrix_get(nn->act[nn->num-1], 0, i);
 }
