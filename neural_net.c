@@ -123,7 +123,7 @@ static neural_net_t *init_mem(const int num)
 
 /* create and return neural network */
 neural_net_t *nn_create(
-	const int *layers,
+	const int *const layers,
 	const int num,
 	const double step,
 	const double range)
@@ -158,7 +158,7 @@ neural_net_t *nn_create(
 }
 
 /* destroy neural network and deallocate memory */
-void nn_destroy(neural_net_t *nn)
+void nn_destroy(neural_net_t *const nn)
 {
 	int i;
 	/* deallocate all activation matrices */
@@ -183,9 +183,9 @@ void nn_destroy(neural_net_t *nn)
 
 /* train neural network */
 void nn_train(
-	neural_net_t *nn,
-	const gsl_matrix *train,
-	const gsl_matrix *target,
+	neural_net_t *const nn,
+	const gsl_matrix *const train,
+	const gsl_matrix *const target,
 	const int epochs)
 {
 	int i, r;
@@ -211,9 +211,9 @@ void nn_train(
 
 /* neural network prediction */
 void nn_predict(
-	neural_net_t *nn,
-	const gsl_matrix *x,
-	gsl_matrix *result)
+	neural_net_t *const nn,
+	const gsl_matrix *const x,
+	gsl_matrix *const result)
 {
 	int i;
 	/* apply testing inputs */

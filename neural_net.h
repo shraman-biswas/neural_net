@@ -19,20 +19,20 @@ typedef struct __neural_net_t {
 } neural_net_t;
 
 neural_net_t *nn_create(
-	const int *layers,
+	const int *const layers,
 	const int num,
 	const double step,
 	const double range);
-void nn_destroy(neural_net_t *nn);
+void nn_destroy(neural_net_t *const nn);
 void nn_train(
-	neural_net_t *nn,
-	const gsl_matrix *train,
-	const gsl_matrix *target,
+	neural_net_t *const nn,
+	const gsl_matrix *const train,
+	const gsl_matrix *const target,
 	const int epochs);
 void nn_predict(
-	neural_net_t *nn,
-	const gsl_matrix *x,
-	gsl_matrix *result);
+	neural_net_t *const nn,
+	const gsl_matrix *const x,
+	gsl_matrix *const result);
 void disp_matrix(const gsl_matrix *m);
 gsl_matrix *arr_to_gslmat(
 	const double *arr,
