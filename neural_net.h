@@ -13,7 +13,7 @@
 typedef struct __neural_net_t {
 	int num;
 	const int *layers;
-	double step, range;
+	double rate, range;
 	gsl_rng *rng;
 	gsl_matrix **wts, **dwt, **dlt, **act;
 } neural_net_t;
@@ -21,7 +21,7 @@ typedef struct __neural_net_t {
 neural_net_t *nn_create(
 	const int *const layers,
 	const int num,
-	const double step,
+	const double rate,
 	const double range);
 void nn_destroy(neural_net_t *const nn);
 void nn_train(

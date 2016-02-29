@@ -5,13 +5,13 @@ int main(void)
 	printf("[ neural network ]\n");
 
 	int i, num, epochs, rows, cols;
-	double step, range;
+	double rate, range;
 	gsl_matrix *train=NULL, *target=NULL, *x=NULL, *result=NULL;
 	neural_net_t *nn=NULL;
 
 	/* neural network parameters */
 	num = SIZE(layers);			/* number of layers */
-	step = 0.1;				/* weights scale step */
+	rate = 0.1;				/* learning rate */
 	range = 2;				/* random number range */
 	epochs = 10000;				/* training iterations */
 
@@ -30,7 +30,7 @@ int main(void)
 	result = gsl_matrix_alloc(1, layers[num-1]);
 
 	/* create neural network */
-	nn = nn_create(layers, num, step, range);
+	nn = nn_create(layers, num, rate, range);
 
 	/* train neural network */
 	nn_train(nn, train, target, epochs);

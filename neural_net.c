@@ -5,6 +5,7 @@
 /*----------------------------------------------------------------------------*/
 
 /* neural network activation function */
+/* y = f(x) = tanh(x) */
 static void activ(gsl_matrix *const m)
 {
 	int i;
@@ -16,6 +17,7 @@ static void activ(gsl_matrix *const m)
 }
 
 /* derivative of neural network activation function */
+/* y = f(x) = 1 - f(x)^2 = 1 - tanh(x)^2 */
 static void activ_der(gsl_matrix *const m)
 {
 	int i;
@@ -33,7 +35,7 @@ static void init_rand(neural_net_t *const nn)
 	nn->rng = gsl_rng_alloc(gsl_rng_default);
 }
 
-/* set random values to neural network weights matrix */
+/* set random values in neural network weights matrix */
 static void wts_rand(neural_net_t *const nn, const int idx)
 {
 	int i, j;
@@ -97,7 +99,7 @@ static void wts_update(neural_net_t *const nn)
 	for (i=0; i < nn->num-1; ++i) {
 		gsl_blas_dgemm(CblasTrans, CblasNoTrans, \
 		1, nn->act[i], nn->dlt[i], 0, nn->dwt[i]);
-		gsl_matrix_scale(nn->dwt[i], nn->step);
+		gsl_matrix_scale(nn->dwt[i], nn->rate);
 		gsl_matrix_sub(nn->wts[i], nn->dwt[i]);
 	}
 }
@@ -105,11 +107,13 @@ static void wts_update(neural_net_t *const nn)
 /* allocate and initialize neural network memory */
 static neural_net_t *init_mem(const int num)
 {
+	/* allocate memory for neural network */
 	neural_net_t *nn = (neural_net_t *)malloc(sizeof(neural_net_t));
 	if (nn == NULL) {
 		perror("neural network could not be created!");
 		exit(EXIT_FAILURE);
 	}
+	/* allocate memory for all neural network matrices */
 	nn->wts = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
 	nn->dwt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
 	nn->dlt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
@@ -125,7 +129,7 @@ static neural_net_t *init_mem(const int num)
 neural_net_t *nn_create(
 	const int *const layers,
 	const int num,
-	const double step,
+	const double rate,
 	const double range)
 {
 	int i, rows, cols;
@@ -134,7 +138,7 @@ neural_net_t *nn_create(
 	/* get parameters */
 	nn->layers = layers;			/* neural network layers */
 	nn->num = num;				/* number of layers */
-	nn->step = step;			/* weight scale step */
+	nn->rate = rate;			/* learning rate */
 	nn->range = range;			/* random number range */
 	/* initialize random number generator */
 	init_rand(nn);
@@ -249,7 +253,8 @@ gsl_matrix *arr_to_gslmat(
 	const int cols)
 {
 	gsl_matrix *m=NULL;
-	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(arr, rows, cols);
+	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(
+		arr, rows, cols);
 	m = gsl_matrix_alloc(rows, cols);
 	gsl_matrix_memcpy(m, &tmp.matrix);
 	return m;
