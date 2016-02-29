@@ -5,7 +5,7 @@
 /*----------------------------------------------------------------------------*/
 
 /* neural network activation function */
-static void activ(gsl_matrix *m)
+static void activ(gsl_matrix *const m)
 {
 	int i;
 	double tmp;
@@ -16,7 +16,7 @@ static void activ(gsl_matrix *m)
 }
 
 /* derivative of neural network activation function */
-static void activ_der(gsl_matrix *m)
+static void activ_der(gsl_matrix *const m)
 {
 	int i;
 	double tmp;
@@ -27,14 +27,14 @@ static void activ_der(gsl_matrix *m)
 }
 
 /* initialize neural network random number generator */
-static void init_rand(neural_net_t *nn)
+static void init_rand(neural_net_t *const nn)
 {
 	gsl_rng_env_setup();
 	nn->rng = gsl_rng_alloc(gsl_rng_default);
 }
 
 /* set random values to neural network weights matrix */
-static void wts_rand(neural_net_t *nn, const int idx)
+static void wts_rand(neural_net_t *const nn, const int idx)
 {
 	int i, j;
 	double tmp;
@@ -48,7 +48,7 @@ static void wts_rand(neural_net_t *nn, const int idx)
 }
 
 /* create training set matrix from training inputs matrix */
-static gsl_matrix *create_trset(const gsl_matrix *train)
+static gsl_matrix *create_trset(const gsl_matrix *const train)
 {
 	gsl_matrix_view tmp;
 	/* create training set matrix */
@@ -62,7 +62,7 @@ static gsl_matrix *create_trset(const gsl_matrix *train)
 }
 
 /* forward propogation */
-static void fwd_prop(neural_net_t *nn)
+static void fwd_prop(neural_net_t *const nn)
 {
 	int i;
 	for (i=1; i < nn->num; ++i) {
@@ -73,11 +73,11 @@ static void fwd_prop(neural_net_t *nn)
 }
 
 /* backward propogation */
-static void bwd_prop(neural_net_t *nn, const double *target)
+static void bwd_prop(neural_net_t *const nn, const double *target)
 {
 	int i, L = nn->num - 1;
-	gsl_matrix_view tmp;
-	tmp = gsl_matrix_view_array((double *)target, 1, nn->layers[L]);
+	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(
+		target, 1, nn->layers[L]);
 	gsl_matrix_memcpy(nn->dlt[L-1], nn->act[L]);
 	gsl_matrix_sub(nn->dlt[L-1], &tmp.matrix);
 	activ_der(nn->act[L]);
@@ -91,7 +91,7 @@ static void bwd_prop(neural_net_t *nn, const double *target)
 }
 
 /* update neural network weights */
-static void wts_update(neural_net_t *nn)
+static void wts_update(neural_net_t *const nn)
 {
 	int i;
 	for (i=0; i < nn->num-1; ++i) {
