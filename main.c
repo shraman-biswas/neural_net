@@ -6,7 +6,7 @@ int main(void)
 
 	int i, num, epochs;
 	double step, range;
-	gsl_matrix *train=NULL, *target=NULL, *test=NULL, *result=NULL;
+	gsl_matrix *train=NULL, *target=NULL, *x=NULL, *result=NULL;
 	neural_net_t *nn=NULL;
 
 	/* neural network parameters */
@@ -20,7 +20,7 @@ int main(void)
 	/* convert training targets array to gsl matrix */
 	target = arr_to_gslmat(target_arr, 4, 1);
 	/* allocate memory for testing inputs matrix */
-	test = gsl_matrix_alloc(1, train->size2);
+	x = gsl_matrix_alloc(1, train->size2);
 	/* allocate memory for neural network prediction result */
 	result = gsl_matrix_alloc(1, layers[num-1]);
 
@@ -32,8 +32,8 @@ int main(void)
 
 	/* loop over testing inputs  */
 	for (i=0; i < train->size1; ++i) {
-		select_test(train, test, i);	/* select testing input */
-		nn_predict(nn, test, result);	/* neural network prediction */
+		select_test(train, x, i);	/* select testing input */
+		nn_predict(nn, x, result);	/* neural network prediction */
 		disp_result(train, result, i);	/* display prediction result */
 	}
 
@@ -64,10 +64,12 @@ static void disp_result(
 /* select neural network testing inputs matrix */
 static void select_test(
 	const gsl_matrix *const train,
-	gsl_matrix *const test,
+		gsl_matrix *const x,
 	const int set_num)
 {
-	int i;
-	for (i=0; i < train->size2; ++i)
-		test->data[i] = train->data[set_num * train->size2 + i];
+	/* select 1 testing input from testing set matrix */
+	gsl_matrix_const_view tmp = gsl_matrix_const_submatrix(
+		train, set_num, 0, 1, train->size2);
+	/* set testing inputs matrix */
+	gsl_matrix_memcpy(x, &tmp.matrix);
 }

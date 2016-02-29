@@ -29,8 +29,8 @@ static void disp_result(
 	const gsl_matrix *const result,
 	const int set_num);
 static void select_test(
-	const gsl_matrix *const train,
-	gsl_matrix *const test,
+	const gsl_matrix *const test,
+		gsl_matrix *const x,
 	const int set_num);
 
 #endif
