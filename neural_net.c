@@ -215,11 +215,10 @@ void nn_predict(
 	const gsl_matrix *const x,
 	gsl_matrix *const result)
 {
-	int i;
 	/* apply testing inputs */
-	for (i=0; i < x->size2; ++i)
-		gsl_matrix_set(nn->act[0], 0, i, x->data[i]);
-	gsl_matrix_set(nn->act[0], 0, i, 1);
+	gsl_matrix_view tmp = gsl_matrix_submatrix(
+		nn->act[0], 0, 0, x->size1, x->size2);
+	gsl_matrix_memcpy(&tmp.matrix, x);
 	/* forward propogate stimuli */
 	fwd_prop(nn);
 	/* prediction results matrix */
