@@ -3,7 +3,7 @@ Neural Network
 
 A feed-forward artificial neural network implementation with vectorized matrix operations.  
 Uses the GNU Scientific Library (gsl) for matrix calculations.  
-Features:  
+Features:
 * neural network creation
 * neural network destruction
 * neural network training
