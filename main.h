@@ -16,6 +16,10 @@ const double train_arr[] = {			/* training inputs array */
 	0, 	1,
 	1, 	0,
 	1,	1,
+	0,	0,
+	0, 	1,
+	1, 	0,
+	1,	1,
 };
 const double target_arr[] = {			/* training targets array */
 	0,
@@ -25,7 +29,7 @@ const double target_arr[] = {			/* training targets array */
 };
 
 static void disp_result(
-	const gsl_matrix *train,
+	const gsl_matrix *test,
 	const gsl_matrix *result,
 	const int set);
 static void select_test(

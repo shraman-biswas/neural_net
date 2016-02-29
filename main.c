@@ -34,7 +34,7 @@ int main(void)
 	for (i=0; i < train->size1; ++i) {
 		select_test(train, test, i);	/* select testing input */
 		nn_predict(nn, test, result);	/* neural network prediction */
-		disp_result(train, result, i);	/* display prediction */
+		disp_result(train, result, i);	/* display prediction result */
 	}
 
 	/* destroy neural network */
@@ -45,16 +45,17 @@ int main(void)
 
 /* display neural nertwork prediction result matrix */
 static void disp_result(
-	const gsl_matrix *train,
+	const gsl_matrix *test,
 	const gsl_matrix *result,
 	const int set_num)
 {
 	int i;
-	double input1, input2;
-	i = train->size2 * set_num;
-	input1 = train->data[i];		/* training input 1 */
-	input2 = train->data[i+1];		/* training input 2 */
-	printf("(%f, %f) -> ", input1, input2);
+	printf("(");
+	/* display neural network testing inputs */
+	for (i=0; i < test->size2-1; ++i)
+		printf("%f, ", gsl_matrix_get(test, set_num, i));
+	printf("%f) -> ", gsl_matrix_get(test, set_num, i));
+	/* display neural network prediction results */
 	for (i=0; i < result->size2-1; ++i)
 		printf("%f, ", gsl_matrix_get(result, 0, i));
 	printf("%f\n", gsl_matrix_get(result, 0, i));
@@ -67,10 +68,6 @@ static void select_test(
 	const int set_num)
 {
 	int i;
-	//gsl_matrix_view tmp;
-	//tmp = gsl_matrix_submatrix((gsl_matrix *)train, set_num, 0, set_num, train->size2);
-	//printf("---> %ld, %ld", tmp.matrix.size1, tmp.matrix.size2);
-	//gsl_matrix_memcpy(test, &tmp.matrix);
 	for (i=0; i < train->size2; ++i)
 		test->data[i] = train->data[set_num * train->size2 + i];
 }
