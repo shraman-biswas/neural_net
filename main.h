@@ -16,10 +16,6 @@ const double train_arr[] = {			/* training inputs array */
 	0, 	1,
 	1, 	0,
 	1,	1,
-	0,	0,
-	0, 	1,
-	1, 	0,
-	1,	1,
 };
 const double target_arr[] = {			/* training targets array */
 	0,
