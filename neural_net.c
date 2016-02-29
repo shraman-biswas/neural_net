@@ -201,7 +201,7 @@ void nn_train(
 		/* forward propogate stimuli */
 		fwd_prop(nn);
 		/* backward propogate */
-		bwd_prop(nn, gsl_matrix_const_ptr(target, r * target->size2, 0));
+		bwd_prop(nn, gsl_matrix_const_ptr(target, r, 0));
 		/* update weights */
 		wts_update(nn);
 	}
@@ -249,9 +249,8 @@ gsl_matrix *arr_to_gslmat(
 	const int cols)
 {
 	gsl_matrix *m=NULL;
-	gsl_matrix_view tmp;
+	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(arr, rows, cols);
 	m = gsl_matrix_alloc(rows, cols);
-	tmp = gsl_matrix_view_array((double *)arr, rows, cols);
 	gsl_matrix_memcpy(m, &tmp.matrix);
 	return m;
 }

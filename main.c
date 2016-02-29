@@ -4,7 +4,7 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num, epochs;
+	int i, num, epochs, rows, cols;
 	double step, range;
 	gsl_matrix *train=NULL, *target=NULL, *x=NULL, *result=NULL;
 	neural_net_t *nn=NULL;
@@ -15,10 +15,15 @@ int main(void)
 	range = 2;				/* random number range */
 	epochs = 10000;				/* training iterations */
 
+	/* calculate parameters */
+	num = SIZE(layers);
+	cols = layers[0];
+	rows = SIZE(train_arr) / cols;
+
 	/* convert training inputs array to gsl matrix */
-	train = arr_to_gslmat(train_arr, 4, 2);
+	train = arr_to_gslmat(train_arr, rows, cols);
 	/* convert training targets array to gsl matrix */
-	target = arr_to_gslmat(target_arr, 4, 1);
+	target = arr_to_gslmat(target_arr, rows, layers[num-1]);
 	/* allocate memory for testing inputs matrix */
 	x = gsl_matrix_alloc(1, train->size2);
 	/* allocate memory for neural network prediction result */
