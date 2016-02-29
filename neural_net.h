@@ -9,27 +9,34 @@
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_blas.h>
 
-typedef struct __nn_matrix_t {
-	int rows, cols;
-	double *data;
-} nn_matrix_t;
-
+/* neural network structure */
 typedef struct __neural_net_t {
 	int num;
 	const int *layers;
-	double step, range;
+	double rate, range;
 	gsl_rng *rng;
 	gsl_matrix **wts, **dwt, **dlt, **act;
 } neural_net_t;
-neural_net_t nn;
 
-void nn_init(
-	const int *layers,
+neural_net_t *nn_create(
+	const int *const layers,
 	const int num,
-	const double step,
+	const double rate,
 	const double range);
-void nn_clear(void);
-void nn_train(const nn_matrix_t *in, const nn_matrix_t *tgt, const int epochs);
-void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res);
+void nn_destroy(neural_net_t *const nn);
+void nn_train(
+	neural_net_t *const nn,
+	const gsl_matrix *const train,
+	const gsl_matrix *const target,
+	const int epochs);
+void nn_predict(
+	neural_net_t *const nn,
+	const gsl_matrix *const x,
+	gsl_matrix *const result);
+void disp_matrix(const gsl_matrix *const m);
+gsl_matrix *arr_to_gslmat(
+	const double *const arr,
+	const int rows,
+	const int cols);
 
 #endif

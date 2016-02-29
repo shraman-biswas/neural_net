@@ -4,44 +4,77 @@ int main(void)
 {
 	printf("[ neural network ]\n");
 
-	int i, num;
-	num = sizeof(layers) / sizeof(*layers);
+	int i, num, epochs, rows, cols;
+	double rate, range;
+	gsl_matrix *train=NULL, *target=NULL, *x=NULL, *result=NULL;
+	neural_net_t *nn=NULL;
 
-	nn_init(layers, num, 0.1, 2);
+	/* neural network parameters */
+	num = SIZE(layers);			/* number of layers */
+	rate = 0.1;				/* learning rate */
+	range = 2;				/* random number range */
+	epochs = 10000;				/* training iterations */
 
-	nn_train(&in, &tgt, EPOCHS);
+	/* calculate parameters */
+	num = SIZE(layers);
+	cols = layers[0];
+	rows = SIZE(train_arr) / cols;
 
-	double x_arr[in.cols];
-	double res_arr[layers[num-1]];
-	nn_matrix_t x = {1, in.cols, x_arr};
-	nn_matrix_t res = {1, layers[num-1], res_arr};
+	/* convert training inputs array to gsl matrix */
+	train = arr_to_gslmat(train_arr, rows, cols);
+	/* convert training targets array to gsl matrix */
+	target = arr_to_gslmat(target_arr, rows, layers[num-1]);
+	/* allocate memory for testing inputs matrix */
+	x = gsl_matrix_alloc(1, train->size2);
+	/* allocate memory for neural network prediction result */
+	result = gsl_matrix_alloc(1, layers[num-1]);
 
-	for (i=0; i<4; ++i) {
-		set_x(&x, i);
-		nn_predict(&x, &res);
-		disp_res(&res, i);
+	/* create neural network */
+	nn = nn_create(layers, num, rate, range);
+
+	/* train neural network */
+	nn_train(nn, train, target, epochs);
+
+	/* loop over testing inputs  */
+	for (i=0; i < train->size1; ++i) {
+		select_test(train, x, i);	/* select testing input */
+		nn_predict(nn, x, result);	/* neural network prediction */
+		disp_result(train, result, i);	/* display prediction result */
 	}
 
-	nn_clear();
+	/* destroy neural network */
+	nn_destroy(nn);
 
 	return EXIT_SUCCESS;
 }
 
-static void disp_res(const nn_matrix_t *res, const int set)
+/* display neural nertwork prediction result matrix */
+static void disp_result(
+	const gsl_matrix *const test,
+	const gsl_matrix *const result,
+	const int set_num)
 {
-	double in1, in2;
-	in1 = in.data[set * in.cols];
-	in2 = in.data[set * in.cols + 1];
-	printf("(%f, %f) -> ", in1, in2);
 	int i;
-	for (i=0; i< res->cols; ++i)
-		printf("%f, ", res->data[i]);
-	printf("\b\b \n");
+	printf("(");
+	/* display neural network testing inputs */
+	for (i=0; i < test->size2-1; ++i)
+		printf("%f, ", gsl_matrix_get(test, set_num, i));
+	printf("%f) -> ", gsl_matrix_get(test, set_num, i));
+	/* display neural network prediction results */
+	for (i=0; i < result->size2-1; ++i)
+		printf("%f, ", gsl_matrix_get(result, 0, i));
+	printf("%f\n", gsl_matrix_get(result, 0, i));
 }
 
-static void set_x(const nn_matrix_t *x, const int set)
+/* select neural network testing inputs matrix */
+static void select_test(
+	const gsl_matrix *const train,
+		gsl_matrix *const x,
+	const int set_num)
 {
-	int i;
-	for (i=0; i<in.cols; ++i)
-		x->data[i] = in.data[set * in.cols + i];
+	/* select 1 testing input from testing set matrix */
+	gsl_matrix_const_view tmp = gsl_matrix_const_submatrix(
+		train, set_num, 0, 1, train->size2);
+	/* set testing inputs matrix */
+	gsl_matrix_memcpy(x, &tmp.matrix);
 }

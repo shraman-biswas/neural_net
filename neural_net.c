@@ -1,18 +1,12 @@
 #include "neural_net.h"
 
-static void matrix_print(const gsl_matrix *m)
-{
-	int i, j;
-	for (i=0; i< m->size1; ++i) {
-		for (j=0; j < m->size2-1; ++j) {
-			printf("%f, ", gsl_matrix_get(m, i, j));
-		}
-		printf("%f\n", gsl_matrix_get(m, i, j));
-	}
-	printf("\n");
-}
+/*----------------------------------------------------------------------------*/
+/* internal neural network functions                                          */
+/*----------------------------------------------------------------------------*/
 
-static void activ(gsl_matrix *m)
+/* neural network activation function */
+/* y = f(x) = tanh(x) */
+static void activ(gsl_matrix *const m)
 {
 	int i;
 	double tmp;
@@ -22,7 +16,9 @@ static void activ(gsl_matrix *m)
 	}
 }
 
-static void activ_der(gsl_matrix *m)
+/* derivative of neural network activation function */
+/* y = f(x) = 1 - f(x)^2 = 1 - tanh(x)^2 */
+static void activ_der(gsl_matrix *const m)
 {
 	int i;
 	double tmp;
@@ -32,144 +28,234 @@ static void activ_der(gsl_matrix *m)
 	}
 }
 
-static void rand_init(void)
+/* initialize neural network random number generator */
+static void init_rand(neural_net_t *const nn)
 {
 	gsl_rng_env_setup();
-	nn.rng = gsl_rng_alloc(gsl_rng_default);
+	nn->rng = gsl_rng_alloc(gsl_rng_default);
 }
 
-static void matrix_set_rand(gsl_matrix *m)
+/* set random values in neural network weights matrix */
+static void wts_rand(neural_net_t *const nn, const int idx)
 {
 	int i, j;
 	double tmp;
-	for (i=0; i < m->size1; ++i) {
-		for (j=0; j < m->size2; ++j) {
-			tmp = 2 * gsl_rng_uniform(nn.rng) - 1;
-			gsl_matrix_set(m, i, j, tmp * nn.range);
+	gsl_matrix *wts = nn->wts[idx];
+	for (i=0; i < wts->size1; ++i) {
+		for (j=0; j < wts->size2; ++j) {
+			tmp = 2 * gsl_rng_uniform(nn->rng) - 1;
+			gsl_matrix_set(wts, i, j, tmp * nn->range);
 		}
 	}
 }
 
-static void matrix_append(gsl_matrix *m, const nn_matrix_t *in)
+/* create training set matrix from training inputs matrix */
+static gsl_matrix *create_trset(const gsl_matrix *const train)
 {
-	int i, j, tmp;
-	for (i=0; i < in->rows; ++i) {
-		for (j=0; j < in->cols+1; ++j) {
-			tmp = (j < in->cols) ? in->data[i * in->cols + j] : 1;
-			gsl_matrix_set(m, i, j, tmp);
-		}
-	}
+	gsl_matrix_view tmp;
+	/* create training set matrix */
+	gsl_matrix *trset = gsl_matrix_alloc(train->size1, train->size2 + 1);
+	/* set all elements of training set matrix to 1 */
+	gsl_matrix_set_all(trset, 1);
+	/* copy training inputs matrix into the start of training set matrix */
+	tmp = gsl_matrix_submatrix(trset, 0, 0, train->size1, train->size2);
+	gsl_matrix_memcpy(&tmp.matrix, train);
+	return trset;
 }
 
-static void fwd_prop(void)
+/* forward propogation */
+static void fwd_prop(neural_net_t *const nn)
 {
 	int i;
-	for (i=1; i<nn.num; ++i) {
+	for (i=1; i < nn->num; ++i) {
 		gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, \
-		1, nn.act[i-1], nn.wts[i-1], 0, nn.act[i]);
-		activ(nn.act[i]);
+		1, nn->act[i-1], nn->wts[i-1], 0, nn->act[i]);
+		activ(nn->act[i]);
 	}
 }
 
-static void bwd_prop(const double *target)
+/* backward propogation */
+static void bwd_prop(neural_net_t *const nn, const double *target)
 {
-	int i, L = nn.num - 1;
-	gsl_matrix_view tmp;
-	tmp = gsl_matrix_view_array((double *)target, 1, nn.layers[L]);
-	gsl_matrix_memcpy(nn.dlt[L-1], nn.act[L]);
-	gsl_matrix_sub(nn.dlt[L-1], &tmp.matrix);
-	activ_der(nn.act[L]);
-	gsl_matrix_mul_elements(nn.dlt[L-1], nn.act[L]);
+	int i, L = nn->num - 1;
+	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(
+		target, 1, nn->layers[L]);
+	gsl_matrix_memcpy(nn->dlt[L-1], nn->act[L]);
+	gsl_matrix_sub(nn->dlt[L-1], &tmp.matrix);
+	activ_der(nn->act[L]);
+	gsl_matrix_mul_elements(nn->dlt[L-1], nn->act[L]);
 	for (i=L-2; i>=0; --i) {
 		gsl_blas_dgemm(CblasNoTrans, CblasTrans, \
-		1, nn.dlt[i+1], nn.wts[i+1], 0, nn.dlt[i]);
-		activ_der(nn.act[i+1]);
-		gsl_matrix_mul_elements(nn.dlt[i], nn.act[i+1]);
+		1, nn->dlt[i+1], nn->wts[i+1], 0, nn->dlt[i]);
+		activ_der(nn->act[i+1]);
+		gsl_matrix_mul_elements(nn->dlt[i], nn->act[i+1]);
 	}
 }
 
-static void wts_update(void)
+/* update neural network weights */
+static void wts_update(neural_net_t *const nn)
 {
 	int i;
-	for (i=0; i < nn.num-1; ++i) {
+	for (i=0; i < nn->num-1; ++i) {
 		gsl_blas_dgemm(CblasTrans, CblasNoTrans, \
-		1, nn.act[i], nn.dlt[i], 0, nn.dwt[i]);
-		gsl_matrix_scale(nn.dwt[i], nn.step);
-		gsl_matrix_sub(nn.wts[i], nn.dwt[i]);
+		1, nn->act[i], nn->dlt[i], 0, nn->dwt[i]);
+		gsl_matrix_scale(nn->dwt[i], nn->rate);
+		gsl_matrix_sub(nn->wts[i], nn->dwt[i]);
 	}
 }
 
-void nn_init(
-	const int *layers,
+/* allocate and initialize neural network memory */
+static neural_net_t *init_mem(const int num)
+{
+	/* allocate memory for neural network */
+	neural_net_t *nn = (neural_net_t *)malloc(sizeof(neural_net_t));
+	if (nn == NULL) {
+		perror("neural network could not be created!");
+		exit(EXIT_FAILURE);
+	}
+	/* allocate memory for all neural network matrices */
+	nn->wts = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
+	nn->dwt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
+	nn->dlt = (gsl_matrix **)calloc(num-1, sizeof(gsl_matrix *));
+	nn->act = (gsl_matrix **)calloc(num, sizeof(gsl_matrix *));
+	return nn;
+}
+
+/*----------------------------------------------------------------------------*/
+/* external neural network functions                                          */
+/*----------------------------------------------------------------------------*/
+
+/* create and return neural network */
+neural_net_t *nn_create(
+	const int *const layers,
 	const int num,
-	const double step,
+	const double rate,
 	const double range)
 {
 	int i, rows, cols;
-	nn.layers = layers;
-	nn.num = num;
-	nn.step = step;
-	nn.range = range;
-	nn.wts = (gsl_matrix **)calloc(num - 1, sizeof(gsl_matrix *));
-	nn.dwt = (gsl_matrix **)calloc(num - 1, sizeof(gsl_matrix *));
-	nn.dlt = (gsl_matrix **)calloc(num - 1, sizeof(gsl_matrix *));
-	nn.act = (gsl_matrix **)calloc(num, sizeof(gsl_matrix *));
-	rand_init();
+	/* allocate memory and initialize neural netowrk */
+	neural_net_t *nn = init_mem(num);
+	/* get parameters */
+	nn->layers = layers;			/* neural network layers */
+	nn->num = num;				/* number of layers */
+	nn->rate = rate;			/* learning rate */
+	nn->range = range;			/* random number range */
+	/* initialize random number generator */
+	init_rand(nn);
 	for (i=0; i < num-1; ++i) {
 		rows = layers[i] + 1;
 		cols = (i < num-2) ? (layers[i+1] + 1) : layers[i+1];
-		nn.wts[i] = gsl_matrix_alloc(rows, cols);
-		matrix_set_rand(nn.wts[i]);
-		nn.dwt[i] = gsl_matrix_alloc(rows, cols);
-		nn.dlt[i] = gsl_matrix_alloc(1, cols);
+		/* create weights matrices and set random weight values */
+		nn->wts[i] = gsl_matrix_alloc(rows, cols);
+		wts_rand(nn, i);
+		/* create weight deltas matrices */
+		nn->dwt[i] = gsl_matrix_alloc(rows, cols);
+		/* create deltas matrices */
+		nn->dlt[i] = gsl_matrix_alloc(1, cols);
 	}
 	for (i=0; i<num; ++i) {
-		cols = (i < num - 1) ? (layers[i] + 1) : layers[i];
-		nn.act[i] = gsl_matrix_alloc(1, cols);
+		cols = (i < num-1) ? (layers[i] + 1) : layers[i];
+		/* create activation matrices */
+		nn->act[i] = gsl_matrix_alloc(1, cols);
 	}
+	return nn;
 }
 
-void nn_clear(void)
+/* destroy neural network and deallocate memory */
+void nn_destroy(neural_net_t *const nn)
 {
 	int i;
-	for (i=0; i<nn.num; ++i)
-		gsl_matrix_free(nn.act[i]);
-	for (i=0; i < nn.num-1; ++i) {
-		gsl_matrix_free(nn.dlt[i]);
-		gsl_matrix_free(nn.dwt[i]);
-		gsl_matrix_free(nn.wts[i]);
+	/* deallocate all activation matrices */
+	for (i=0; i < nn->num; ++i)
+		gsl_matrix_free(nn->act[i]);
+	/* deallocate all deltas, weight deltas, and weights matrices */
+	for (i=0; i < nn->num-1; ++i) {
+		gsl_matrix_free(nn->dlt[i]);
+		gsl_matrix_free(nn->dwt[i]);
+		gsl_matrix_free(nn->wts[i]);
 	}
-	gsl_rng_free(nn.rng);
-	free(nn.act);
-	free(nn.dlt);
-	free(nn.dwt);
-	free(nn.wts);
+	/* deallocate radnom number generator */
+	gsl_rng_free(nn->rng);
+	/* deallocate all neural network matrix pointers */
+	free(nn->act);
+	free(nn->dlt);
+	free(nn->dwt);
+	free(nn->wts);
+	/* deallocate neural network */
+	free(nn);
 }
 
-void nn_train(const nn_matrix_t *in, const nn_matrix_t *tgt, const int epochs)
+/* train neural network */
+void nn_train(
+	neural_net_t *const nn,
+	const gsl_matrix *const train,
+	const gsl_matrix *const target,
+	const int epochs)
 {
 	int i, r;
-	gsl_matrix *trng_set = gsl_matrix_alloc(in->rows, in->cols + 1);
-	matrix_append(trng_set, in);
+	gsl_matrix *trset=NULL;
 	gsl_matrix_view tmp;
+	/* create training set matrix from training inputs matrix */
+	trset = create_trset(train);
 	for (i=0; i<epochs; ++i) {
-		r = gsl_rng_uniform_int(nn.rng, in->rows);
-		tmp = gsl_matrix_submatrix(trng_set, r, 0, 1, in->cols + 1);
-		gsl_matrix_memcpy(nn.act[0], &tmp.matrix);
-		fwd_prop();
-		bwd_prop(&tgt->data[r * tgt->cols]);
-		wts_update();
+		/* randomly select training inputs */
+		r = gsl_rng_uniform_int(nn->rng, train->size1);
+		tmp = gsl_matrix_submatrix(trset, r, 0, 1, train->size2 + 1);
+		gsl_matrix_memcpy(nn->act[0], &tmp.matrix);
+		/* forward propogate stimuli */
+		fwd_prop(nn);
+		/* backward propogate */
+		bwd_prop(nn, gsl_matrix_const_ptr(target, r, 0));
+		/* update weights */
+		wts_update(nn);
 	}
-	gsl_matrix_free(trng_set);
+	/* deallocate training set matrix */
+	gsl_matrix_free(trset);
 }
 
-void nn_predict(const nn_matrix_t *in, const nn_matrix_t *res)
+/* neural network prediction */
+void nn_predict(
+	neural_net_t *const nn,
+	const gsl_matrix *const x,
+	gsl_matrix *const result)
 {
-	int i;
-	for (i=0; i< in->cols; ++i)
-		gsl_matrix_set(nn.act[0], 0, i, in->data[i]);
-	gsl_matrix_set(nn.act[0], 0, i, 1);
-	fwd_prop();
-	for (i=0; i< res->cols; ++i)
-		res->data[i] = gsl_matrix_get(nn.act[nn.num-1], 0, i);
+	/* apply testing inputs */
+	gsl_matrix_view tmp = gsl_matrix_submatrix(
+		nn->act[0], 0, 0, x->size1, x->size2);
+	gsl_matrix_memcpy(&tmp.matrix, x);
+	/* forward propogate stimuli */
+	fwd_prop(nn);
+	/* prediction results matrix */
+	gsl_matrix_memcpy(result, nn->act[nn->num-1]);
+}
+
+/*----------------------------------------------------------------------------*/
+/* external helper functions                                                  */
+/*----------------------------------------------------------------------------*/
+
+/* display gsl matrix */
+void disp_matrix(const gsl_matrix *const m)
+{
+	int i, j;
+	for (i=0; i < m->size1; ++i) {
+		for (j=0; j < m->size2-1; ++j) {
+			printf("%f, ", gsl_matrix_get(m, i, j));
+		}
+		printf("%f\n", gsl_matrix_get(m, i, j));
+	}
+	printf("\n");
+}
+
+/* convert array to gsl matrix */
+gsl_matrix *arr_to_gslmat(
+	const double *const arr,
+	const int rows,
+	const int cols)
+{
+	gsl_matrix *m=NULL;
+	gsl_matrix_const_view tmp = gsl_matrix_const_view_array(
+		arr, rows, cols);
+	m = gsl_matrix_alloc(rows, cols);
+	gsl_matrix_memcpy(m, &tmp.matrix);
+	return m;
 }
