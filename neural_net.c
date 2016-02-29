@@ -201,7 +201,7 @@ void nn_train(
 		/* forward propogate stimuli */
 		fwd_prop(nn);
 		/* backward propogate */
-		bwd_prop(nn, &target->data[r * target->size2]);
+		bwd_prop(nn, gsl_matrix_const_ptr(target, r * target->size2, 0));
 		/* update weights */
 		wts_update(nn);
 	}
