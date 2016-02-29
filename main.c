@@ -45,8 +45,8 @@ int main(void)
 
 /* display neural nertwork prediction result matrix */
 static void disp_result(
-	const gsl_matrix *test,
-	const gsl_matrix *result,
+	const gsl_matrix *const test,
+	const gsl_matrix *const result,
 	const int set_num)
 {
 	int i;
@@ -63,8 +63,8 @@ static void disp_result(
 
 /* select neural network testing inputs matrix */
 static void select_test(
-	const gsl_matrix *train,
-	gsl_matrix *test,
+	const gsl_matrix *const train,
+	gsl_matrix *const test,
 	const int set_num)
 {
 	int i;

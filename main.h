@@ -25,12 +25,12 @@ const double target_arr[] = {			/* training targets array */
 };
 
 static void disp_result(
-	const gsl_matrix *test,
-	const gsl_matrix *result,
-	const int set);
+	const gsl_matrix *const test,
+	const gsl_matrix *const result,
+	const int set_num);
 static void select_test(
-	const gsl_matrix *train,
-	gsl_matrix *test,
-	const int set);
+	const gsl_matrix *const train,
+	gsl_matrix *const test,
+	const int set_num);
 
 #endif
