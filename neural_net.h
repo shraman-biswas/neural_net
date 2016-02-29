@@ -33,9 +33,9 @@ void nn_predict(
 	neural_net_t *const nn,
 	const gsl_matrix *const x,
 	gsl_matrix *const result);
-void disp_matrix(const gsl_matrix *m);
+void disp_matrix(const gsl_matrix *const m);
 gsl_matrix *arr_to_gslmat(
-	const double *arr,
+	const double *const arr,
 	const int rows,
 	const int cols);
 

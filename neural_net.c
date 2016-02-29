@@ -231,7 +231,7 @@ void nn_predict(
 /*----------------------------------------------------------------------------*/
 
 /* display gsl matrix */
-void disp_matrix(const gsl_matrix *m)
+void disp_matrix(const gsl_matrix *const m)
 {
 	int i, j;
 	for (i=0; i < m->size1; ++i) {
@@ -245,7 +245,7 @@ void disp_matrix(const gsl_matrix *m)
 
 /* convert array to gsl matrix */
 gsl_matrix *arr_to_gslmat(
-	const double *arr,
+	const double *const arr,
 	const int rows,
 	const int cols)
 {
