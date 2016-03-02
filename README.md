@@ -2,7 +2,7 @@ Neural Network
 ==============
 
 A feed-forward artificial neural network implementation with vectorized matrix operations.  
-Uses the GNU Scientific Library (gsl) for matrix calculations.  
+Uses the GNU Scientific Library (gsl) for matrix calculations.
 
 Features:
 * neural network creation
